@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser"
 import MerchantRoutes from "./routes/merchantRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js"
 const app = express();
@@ -9,6 +10,7 @@ app.get("/",(req,res)=>{
 })
 
 // Middleware
+app.use(cookieParser());
 app.use(express.json());
 app.use(cors({
   origin: process.env.CORS_ORIGIN || "http://localhost:5000",

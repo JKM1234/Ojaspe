@@ -1,11 +1,10 @@
 import { MerchantUser } from "../models/merchant.js";
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
-
+import crypto, { randomBytes } from "crypto";
 // register a merchant
 export const registerMerchant = async (req, res) => {
   try {
-    const { companyName, contactPerson, email, phone, password } = req.body;
+    const { companyName, contactPerson, email, phone, password} = req.body;
 
     const existingMerchant = await MerchantUser.findOne({ email ,phone});
     if (existingMerchant) {
@@ -15,7 +14,6 @@ export const registerMerchant = async (req, res) => {
     }
 
     const apiKey = crypto.randomBytes(32).toLocaleString("hex");
-
     const merchant = await MerchantUser.create({
       companyName,
       contactPerson,
@@ -43,7 +41,6 @@ export const registerMerchant = async (req, res) => {
 
 // getting all the merchants code
 
-// src/controllers/merchantController.js
 export const getMerchants = async (req, res) => {
   try {
     const merchants = await MerchantUser.find().select("-password"); // do not return password
@@ -71,7 +68,13 @@ export const loginMerchant = async (req, res) => {
       process.env.JWT_SECRET || "secretkey",
       { expiresIn: "7d" }
     );
-
+    
+    res.cookie("token",token,{
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 24*60*60*1000,
+    })
     res.status(200).json({
       message: "Login succcessfully",
       token,
@@ -93,21 +96,7 @@ export const loginMerchant = async (req, res) => {
 };
 
 export const logoutMerchant = (req, res) => {
-  try {
-    // Clear cookie (if JWT stored in cookies)
-    res.cookie("merchantToken", "", {
-      httpOnly: true,
-      expires: new Date(0), 
-      secure: false,        // set true if using https
-      sameSite: "lax",
-    });
-
-    res.status(200).json({
-      message: "Logout successful. Token removed from cookies and client storage.",
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server Error" });
-  }
+  res.clearCookie("token");
+  res.status(200).json({ message: "Logout successful" });
 };
 

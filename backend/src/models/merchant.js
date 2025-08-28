@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import crypto from "crypto"
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -33,6 +34,13 @@ const MerchantSchema = new Schema(
       type: String,
       required: true,
       unique: true,
+    },
+    merchantUniqueId:{
+      type: String,
+      unique: true,
+      default: function (){
+       return "XOjaspe"+crypto.randomBytes(4).toString("hex");
+      },
     },
     isActive: {
       type: Boolean,
